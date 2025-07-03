@@ -1,0 +1,25 @@
+{
+  "courses": [
+    {
+      "id": "cmclpw5x6000m4bjq8tuunkv4",
+      "title": "Internal Medicine Rotation",
+      "name": "Internal Medicine Rotation",
+      "enrollmentNumber": "MED-INT-2024-01",
+      "facultyName": "Dr. Sarah Johnson",
+      "designation": "Associate Professor",
+      "hospitalName": "Aster General Hospital",
+      "location": "Kochi",
+      "contactProgram": "InternalMedDept",
+      "teacherId": "cmclpw5x6000i4bjqoc6fjinc",
+      "startDate": "2024-01-15",
+      "endDate": "2024-06-15",
+      "status": "Active"
+    }
+  ],
+  "tasks": [
+    { "date": "2025-07-01", "status": "Submitted" },
+    { "date": "2025-07-02", "status": "Approved" },
+    { "date": "2025-07-03", "status": "Rejected" },
+    { "date": "2025-07-04", "status": "Submitted" }
+  ]
+}
