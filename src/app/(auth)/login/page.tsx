@@ -31,36 +31,11 @@ export default function LoginPage() {
     e.preventDefault();
     setIsLoading(true);
     setError("");
-
-    // try {
-    //   // Simulate API call
-    //   await new Promise((resolve) => setTimeout(resolve, 1500));
-
-    //   // Mock validation
-    //   if (
-    //     formData.email === "demo@example.com" &&
-    //     formData.password === "password"
-    //   ) {
-    //     // Success - in real app, this would set auth token and redirect
-    //     console.log("Login successful!", formData);
-    //     const role = formData.role;
-    //     login("fake_token", role);
-    //   } else {
-    //     setError("Invalid email or password. Try demo@example.com / password");
-    //   }
-    // } catch (err) {
-    //   setError("An error occurred. Please try again.");
-    // } finally {
-    //   setIsLoading(false);
-    // }
-
     try {
       const data = await execute(() =>
         loginService(formData.email, formData.password)
       );
-      console.log("data", data);
-
-      login(data.token, data.user.role); // optional depending on how your context works
+      login(data.token, data.user.role, data.user); // optional depending on how your context works
     } catch (err) {
       console.error("Login failed:", err);
     }

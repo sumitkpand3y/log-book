@@ -11,9 +11,10 @@ import {
 import { useAuth } from "@/components/auth/AuthProvider";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
+import Image from "next/image";
 
 export default function Header() {
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -21,9 +22,18 @@ export default function Header() {
   const toggleMenu = () => setMenuOpen((prev) => !prev);
   const toggleDropdown = () => setDropdownOpen((prev) => !prev);
 
+  const getInitials = (name: string) => {
+    const words = name.trim().split(" ");
+    if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
+    return (words[0][0] + words[1][0]).toUpperCase();
+  };
+
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setDropdownOpen(false);
       }
     }
@@ -32,7 +42,11 @@ export default function Header() {
   }, []);
 
   const navItems = [
-    { label: "Dashboard", icon: <LayoutDashboard size={18} />, href: "/learner/dashboard" },
+    {
+      label: "Dashboard",
+      icon: <LayoutDashboard size={18} />,
+      href: "/",
+    },
     // { label: "Log Tasks", icon: <NotebookPen size={18} />, href: "#" },
     // { label: "Calendar", icon: <Calendar size={18} />, href: "#" },
   ];
@@ -48,9 +62,15 @@ export default function Header() {
           >
             {menuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
-          <h1 className="text-xl font-bold text-white tracking-tight">
-            🩺 Aster Learner
-          </h1>
+          <Link href="/" className="flex items-center gap-2">
+            <Image
+              src="https://f9e9317a.delivery.rocketcdn.me/wp-content/uploads/2023/10/Aster-Health-Academy_Logo-497x190.png"
+              alt="Aster Logo"
+              width={120}
+              height={120}
+              className="rounded bg-white p-1"
+            />
+          </Link>
         </div>
 
         {/* Desktop Menu */}
@@ -70,13 +90,10 @@ export default function Header() {
           <div className="relative" ref={dropdownRef}>
             <button
               onClick={toggleDropdown}
-              className="w-10 h-10 rounded-full border-2 border-white overflow-hidden bg-white hover:ring-2 hover:ring-emerald-300 transition-all"
+              className="w-10 h-10 rounded-full border-2 border-white bg-emerald-600 text-white hover:ring-2 hover:ring-emerald-300 transition-all flex items-center justify-center text-sm font-semibold transition-all cursor-pointer"
             >
-              <img
-                src={`https://api.dicebear.com/7.x/initials/svg?seed=Aster`}
-                alt="Profile"
-                className="w-full h-full object-cover"
-              />
+              {getInitials(user?.name || "User")}
+
             </button>
 
             {/* AnimatePresence handles enter/exit animation */}

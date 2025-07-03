@@ -37,7 +37,7 @@ import { submissionAPI } from "@/services/submission.services";
 import { useSubmissions } from "@/hooks/useSubmissions";
 import { useDashboardStats } from "@/hooks/useDashboardStats";
 
-import MedicalDashboard from "@/app/teacher/(teacher)/dashboard/DashbaordData";
+import MedicalDashboard from "@/app/teacher/(teacher)/dashboard/Dashbaord";
 
 // Utility functions
 const getStatusColor = (status) => {
@@ -430,7 +430,11 @@ const SubmissionTable = ({
                     Review
                   </button>
                   <button
-                    onClick={() => router.push("/teacher/dashboard/new")}
+                    onClick={() =>
+                      router.push(
+                        `/teacher/dashboard/new?learnerId=${submission.learnerId}&submissionId=${submission.id}`
+                      )
+                    }
                     className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-1"
                   >
                     <Eye className="w-4 h-4" />
@@ -463,7 +467,7 @@ const ReportsSection = ({ reportData, submissions, getDepartmentIcon }) => (
     <div className="bg-white rounded-xl lg:rounded-2xl shadow-lg p-4 lg:p-6">
       <h2 className="text-xl lg:text-xl font-bold text-gray-800 mb-4 flex items-center">
         <BarChart3 className="w-6 h-6 lg:w-8 lg:h-8 mr-2 lg:mr-3 text-blue-600" />
-         Reports & Analytics
+        Reports & Analytics
       </h2>
 
       {/* Key Metrics */}
@@ -683,7 +687,7 @@ const TeacherDashboard = () => {
   const [rejectComment, setRejectComment] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [activeTab, setActiveTab] = useState("dashboard");
+  const [activeTab, setActiveTab] = useState("submissions");
   const [currentCaseIndex, setCurrentCaseIndex] = useState(0);
   const [selectedSubmissionIds, setSelectedSubmissionIds] = useState([]);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);

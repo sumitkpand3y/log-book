@@ -4,16 +4,12 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/auth/AuthProvider";
 import Header from "@/components/ui/Header";
 import Footer from "@/components/ui/Footer";
+import { useAuthGuard } from "@/hooks/useAuthGuard";
 
 export default function LearnerLayout({ children }: { children: React.ReactNode }) {
   const { token, role } = useAuth();
   const router = useRouter();
-
-  useEffect(() => {
-    if (!token || role !== "learner") {
-      // router.replace("/login");
-    }
-  }, [token, role]);
+  useAuthGuard(["TEACHER"]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">

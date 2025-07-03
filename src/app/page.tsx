@@ -9,7 +9,7 @@ export default function HomePage() {
 
   useEffect(() => {
     if (token && role) {
-      router.replace(`/${role}/dashboard`);
+      router.replace(`/${role.toLocaleLowerCase()}/dashboard`);
     } else {
       router.replace("/login");
     }

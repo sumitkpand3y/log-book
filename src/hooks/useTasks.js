@@ -24,7 +24,6 @@ export function useTasks(filters = {}) {
         limit: pagination.itemsPerPage,
         ...filters,
       };
-      console.log("paginationParams:", paginationParams);
 
       const data = await execute(() => taskAPI.getAllTasks(paginationParams));
       if (data)
@@ -152,7 +151,6 @@ export function useTasks(filters = {}) {
 // refetch: loadTasks,
 
 // export function useTask(id) {
-//   console.log("useTask called with id:", id);
 
 //   const [task, setTask] = useState(null);
 //   const { execute, loading, error } = useAPI();

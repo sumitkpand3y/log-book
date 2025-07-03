@@ -316,7 +316,6 @@ export default function TaskPage({ params }: TaskPageProps) {
       }
 
       if (result) {
-        console.log(`Task ${isDraft ? "saved as draft" : "submitted"} successfully:`, result);
         router.back();
       }
     } catch (err) {

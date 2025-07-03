@@ -135,14 +135,8 @@ const SearchAndFilter = ({
   }, [searchTerm, onSearch]);
 
   const handleStatusChange = (status: string) => {
-    console.log("handleStatusChange:", status);
-    
     setStatusFilter(status);
-    console.log("onStatusFilter:", onStatusFilter);
-    
     if (onStatusFilter) {
-        console.log("Calling onStatusFilter with status:", status);
-        
       onStatusFilter(status);
     }
   };
@@ -495,7 +489,6 @@ export default function ListView({
 
   const handleDeleteEntry = useCallback((id: string) => {
     if (window.confirm("Are you sure you want to delete this entry?")) {
-      console.log("Deleting entry:", id);
       // Here you would typically call your delete API
     }
   }, []);

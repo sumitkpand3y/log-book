@@ -121,8 +121,8 @@ const LoadingSpinner: React.FC = () => (
 
 // Header Component
 interface HeaderProps {
-  activeView: "dashboard" | "calendar";
-  setActiveView: (view: "dashboard" | "calendar") => void;
+  activeView: "list" | "dashboard";
+  setActiveView: (view: "list" | "dashboard") => void;
   onAddCase: () => void;
   isMobileMenuOpen: boolean;
   setIsMobileMenuOpen: (open: boolean) => void;
@@ -151,9 +151,9 @@ const Header: React.FC<HeaderProps> = ({
           Dashboard
         </button>
         <button
-          onClick={() => setActiveView("calendar")}
+          onClick={() => setActiveView("list")}
           className={`px-4 lg:px-6 py-2 rounded-lg font-medium transition-all ${
-            activeView === "calendar"
+            activeView === "list"
               ? "bg-blue-600 text-white shadow-lg"
               : "bg-white text-gray-600 hover:bg-gray-50 border"
           }`}
@@ -204,11 +204,11 @@ const Header: React.FC<HeaderProps> = ({
           </button>
           <button
             onClick={() => {
-              setActiveView("calendar");
+              setActiveView("list");
               setIsMobileMenuOpen(false);
             }}
             className={`w-full px-4 py-3 rounded-lg font-medium transition-all  text-left ${
-              activeView === "calendar"
+              activeView === "list"
                 ? "bg-blue-600 text-white"
                 : "bg-gray-50 text-gray-600 hover:bg-gray-100"
             }`}
@@ -264,8 +264,8 @@ export default function Dashboard({ params }: DashboardProps) {
   // State
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
-  const [activeView, setActiveView] = useState<"dashboard" | "calendar">(
-    "dashboard"
+  const [activeView, setActiveView] = useState<"list" | "dashboard">(
+    "list"
   );
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -306,7 +306,6 @@ export default function Dashboard({ params }: DashboardProps) {
   };
 
   //  const handleDateClick = useCallback((taskId) => {
-  //   console.log('Edit task:', taskId);
   //   // Navigate to edit page or open modal
   // }, []);
 

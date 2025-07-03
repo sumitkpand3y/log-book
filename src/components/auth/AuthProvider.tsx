@@ -2,10 +2,18 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
+type UserType = {
+  id: string;
+  name: string;
+  email: string;
+  // Add any other fields your API gives
+};
+
 type AuthContextType = {
   token: string | null;
   role: string | null;
-  login: (token: string, role: string) => void;
+  user: UserType | null;
+  login: (token: string, role: string, user: UserType) => void;
   logout: () => void;
 };
 
@@ -14,25 +22,31 @@ const AuthContext = createContext<AuthContextType | null>(null);
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [token, setToken] = useState<string | null>(null);
   const [role, setRole] = useState<string | null>(null);
+  const [user, setUser] = useState<UserType | null>(null);
   const router = useRouter();
 
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
     const storedRole = localStorage.getItem("role");
+    const storedUser = localStorage.getItem("user");
     if (storedToken && storedRole) {
       setToken(storedToken);
       setRole(storedRole);
+      if (storedUser) {
+        setUser(JSON.parse(storedUser));
+      }
     }
   }, []);
 
-  const login = (token: string, role: string) => {
-  localStorage.setItem("token", token);
-  localStorage.setItem("role", role);
-  setToken(token);
-  setRole(role);
-  router.replace(`/${role.toLowerCase()}/dashboard`);
-};
-
+  const login = (token: string, role: string, user: UserType) => {
+    localStorage.setItem("token", token);
+    localStorage.setItem("role", role);
+    localStorage.setItem("user", JSON.stringify(user));
+    setToken(token);
+    setRole(role);
+    setUser(user);
+    router.replace(`/${role.toLowerCase()}/dashboard`);
+  };
 
   const logout = () => {
     localStorage.clear();
@@ -42,7 +56,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ token, role, login, logout }}>
+    <AuthContext.Provider value={{ token, role, user, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
