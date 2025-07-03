@@ -150,8 +150,8 @@ const MedicalDashboard: React.FC<MedicalDashboardProps> = ({
   const COLORS = ['#10B981', '#EF4444', '#F59E0B', '#3B82F6'];
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-gray-50">
+      <div className=" mx-auto">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Medical Cases Dashboard</h1>
           <p className="text-gray-600">Track learner progress and case statistics</p>
