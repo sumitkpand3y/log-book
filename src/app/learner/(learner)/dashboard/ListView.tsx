@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   Activity,
   Calendar,
@@ -15,7 +15,11 @@ import {
   XCircle,
   ChevronLeft,
   ChevronRight,
+  Plus,
 } from "lucide-react";
+
+import { useRouter } from "next/navigation";
+import { toast } from "react-toastify";
 
 // Types
 interface Task {
@@ -53,6 +57,7 @@ interface ListViewProps {
   tasksList: Task[];
   onDateClick: (date: string) => void;
   loading?: boolean;
+  courseId?:string;
   error?: string;
   pagination?: PaginationInfo;
   onPageChange?: (page: number) => void;
@@ -114,11 +119,13 @@ const SearchAndFilter = ({
   statusFilter,
   setStatusFilter,
   onSearch,
+  courseId,
   onStatusFilter,
 }: {
   searchTerm: string;
   setSearchTerm: (term: string) => void;
   statusFilter: string;
+  courseId: string;
   setStatusFilter: (status: string) => void;
   onSearch?: (searchTerm: string) => void;
   onStatusFilter?: (status: string) => void;
@@ -133,12 +140,15 @@ const SearchAndFilter = ({
 
     return () => clearTimeout(timer);
   }, [searchTerm, onSearch]);
-
+  const router = useRouter();
   const handleStatusChange = (status: string) => {
     setStatusFilter(status);
     if (onStatusFilter) {
       onStatusFilter(status);
     }
+  };
+  const handleAddCase = () => {
+    router.push("/learner/dashboard/task/new?idd=" + courseId);
   };
 
   return (
@@ -171,6 +181,14 @@ const SearchAndFilter = ({
             ))}
           </select>
         </div>
+        <button
+          onClick={handleAddCase}
+          className="bg-green-600 hover:bg-green-700 text-white px-4 lg:px-6 py-2 rounded-lg font-medium transition-all shadow-lg hover:shadow-xl text-sm lg:text-base"
+        >
+          <Plus className="w-4 h-4 inline mr-2" />
+          <span className="hidden lg:inline">Add Case</span>
+          <span className="lg:hidden">Add Case</span>
+        </button>
       </div>
     </div>
   );
@@ -201,7 +219,7 @@ const TaskTable = ({
         <span className="hidden sm:inline">Logbook Entries</span>
         <span className="sm:hidden">Entries</span>
         <span className="ml-2 text-sm font-normal text-gray-600">
-          ({tasks.length})
+          ({tasks?.length})
         </span>
       </h2>
     </div>
@@ -228,7 +246,7 @@ const TaskTable = ({
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-100">
-          {tasks.map((entry) => (
+          {tasks?.map((entry) => (
             <tr key={entry.id} className="hover:bg-blue-50 transition-colors">
               <td className="px-4 sm:px-6 py-4">
                 <div>
@@ -245,7 +263,6 @@ const TaskTable = ({
                       <span className="ml-1">{entry.department}</span>
                     </div>
                   )}
-                  {/* Mobile-only patient info */}
                   <div className="sm:hidden mt-2 text-xs text-gray-500">
                     {entry.uhid && <div>UHID: {entry.uhid}</div>}
                     {entry.age && entry.sex && (
@@ -303,7 +320,7 @@ const TaskTable = ({
               <td className="px-4 sm:px-6 py-4">
                 <div className="flex items-center gap-1 sm:gap-2">
                   <button
-                    onClick={() => alert(`Viewing details for ${entry.caseNo}`)}
+                    onClick={() => toast.success(`Viewing details for ${entry.caseNo}`)}
                     className="text-blue-600 hover:text-blue-800 p-1 hover:bg-blue-50 rounded transition-colors"
                     title="View Details"
                   >
@@ -330,7 +347,7 @@ const TaskTable = ({
         </tbody>
       </table>
     </div>
-    {tasks.length === 0 && (
+    {tasks?.length === 0 && (
       <div className="text-center py-8 text-gray-500">
         <ClipboardList className="w-12 h-12 mx-auto mb-4 text-gray-300" />
         <p>No entries found</p>
@@ -366,7 +383,7 @@ const PaginationControls = ({
   const getPageNumbers = () => {
     const pages = [];
     const maxVisible = 5;
-    
+
     if (totalPages <= maxVisible) {
       for (let i = 1; i <= totalPages; i++) {
         pages.push(i);
@@ -376,25 +393,25 @@ const PaginationControls = ({
         for (let i = 1; i <= 4; i++) {
           pages.push(i);
         }
-        pages.push('...');
+        pages.push("...");
         pages.push(totalPages);
       } else if (currentPage >= totalPages - 2) {
         pages.push(1);
-        pages.push('...');
+        pages.push("...");
         for (let i = totalPages - 3; i <= totalPages; i++) {
           pages.push(i);
         }
       } else {
         pages.push(1);
-        pages.push('...');
+        pages.push("...");
         pages.push(currentPage - 1);
         pages.push(currentPage);
         pages.push(currentPage + 1);
-        pages.push('...');
+        pages.push("...");
         pages.push(totalPages);
       }
     }
-    
+
     return pages;
   };
 
@@ -404,7 +421,6 @@ const PaginationControls = ({
   return (
     <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6">
       <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-        {/* Items info and per page selector */}
         <div className="flex flex-col sm:flex-row items-center gap-4">
           <div className="text-sm text-gray-600">
             Showing {startItem} to {endItem} of {totalItems} entries
@@ -426,7 +442,6 @@ const PaginationControls = ({
           )}
         </div>
 
-        {/* Pagination controls */}
         <div className="flex items-center gap-2">
           <button
             disabled={!hasPreviousPage}
@@ -441,14 +456,14 @@ const PaginationControls = ({
             {getPageNumbers().map((page, index) => (
               <button
                 key={index}
-                onClick={() => typeof page === 'number' && onPageChange?.(page)}
-                disabled={page === '...'}
+                onClick={() => typeof page === "number" && onPageChange?.(page)}
+                disabled={page === "..."}
                 className={`px-3 py-2 text-sm rounded-lg transition-colors ${
                   page === currentPage
-                    ? 'bg-blue-600 text-white'
-                    : page === '...'
-                    ? 'text-gray-400 cursor-default'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    ? "bg-blue-600 text-white"
+                    : page === "..."
+                    ? "text-gray-400 cursor-default"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                 }`}
               >
                 {page}
@@ -475,6 +490,7 @@ export default function ListView({
   tasksList,
   onDateClick,
   loading = false,
+  courseId,
   error = null,
   pagination,
   onPageChange,
@@ -526,6 +542,7 @@ export default function ListView({
         statusFilter={statusFilter}
         setStatusFilter={setStatusFilter}
         onSearch={onSearch}
+        courseId={courseId}
         onStatusFilter={onStatusFilter}
       />
 

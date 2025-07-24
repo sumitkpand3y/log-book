@@ -1,26 +1,81 @@
 import { submissionAPI } from "@/services/submission.services";
 import { useEffect, useState } from "react";
 
-// Define or import the SubmissionData type
 export interface SubmissionData {
   id: string;
   status: string;
+  learnerName: string;
+  learnerId: string;
+  taskTitle: string;
+  submissionDate: string;
+  dueDate: string;
+  department: string;
+  priority: string;
+  totalCases: number;
+  approvedCases: number;
+  rejectedCases: number;
+  pendingCases: number;
+  completedCases: number;
+  cases: Array<{
+    id: string;
+    caseNo: string;
+    date: string;
+    status: string;
+    rejectionReason?: string;
+    // Add other case fields as needed
+  }>;
   comments?: string;
-  // Add other fields as needed
+}
+
+interface SubmissionFilters {
+  search?: string;
+  status?: string;
+  department?: string;
+  priority?: string;
+  startDate?: string;
+  endDate?: string;
+  page?: number;
+  limit?: number;
+}
+
+interface CaseFilters {
+  status?: string;
+  startDate?: string;
+  endDate?: string;
+  courseId?: string;
 }
 
 export function useSubmissions() {
   const [submissions, setSubmissions] = useState<SubmissionData[]>([]);
-  const [cases, setCases] = useState([]);
+  const [cases, setCases] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<null | string>(null);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10,
+    total: 0,
+    totalPages: 0,
+  });
 
-  const fetchSubmissions = async () => {
+  const fetchSubmissions = async (filters: SubmissionFilters = {}) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await submissionAPI.getAllSubmissions();
+      const response = await submissionAPI.getAllSubmissions({
+        ...filters,
+        page: filters.page || pagination.page,
+        limit: filters.limit || pagination.limit,
+      });
+      
       setSubmissions(response.data.submissions || []);
+      
+      // Update pagination if available in response
+      if (response.data.pagination) {
+        setPagination(prev => ({
+          ...prev,
+          ...response.data.pagination
+        }));
+      }
     } catch (err) {
       console.error(err);
       setError("Failed to load submissions");
@@ -28,38 +83,34 @@ export function useSubmissions() {
       setLoading(false);
     }
   };
-  const fetchCasesByUserID = async (userId: string) => {
+
+  const fetchCasesByUserID = async (userId: string, filters?: CaseFilters) => {
     setLoading(true);
     setError(null);
 
     try {
-      const response = await submissionAPI.getAllCasesByUserId(userId);
-
-      // ✅ Safely access submissions array from response
-      const cases = response?.data?.cases || [];
-      setCases(cases);
+      const response = await submissionAPI.getAllCasesByUserId(userId, filters);
+      setCases(response?.data?.cases || []);
     } catch (err) {
-      console.error("❌ Error fetching submissions:", err);
-      setError("Failed to load submissions");
+      console.error("Error fetching cases:", err);
+      setError("Failed to load cases");
     } finally {
       setLoading(false);
     }
   };
 
-//   return {
-//     submissions,
-//     loading,
-//     error,
-//     fetchCasesByUserID,
-//   };
-
   const approveSubmission = async (id: string, comments?: string) => {
     try {
       await submissionAPI.approveSubmission(id, { comments });
-      // Update local state
       setSubmissions((prev) =>
         prev.map((sub) =>
           sub.id === id ? { ...sub, status: "Approved", comments } : sub
+        )
+      );
+      // Also update individual case status if it exists in cases state
+      setCases((prev) =>
+        prev.map((c) =>
+          c.id === id ? { ...c, status: "APPROVED", comments } : c
         )
       );
       return true;
@@ -80,7 +131,6 @@ export function useSubmissions() {
         rejectionReason: reason,
       };
       await submissionAPI.rejectSubmission(id, payload);
-      // Update local state
       setSubmissions((prev) =>
         prev.map((sub) =>
           sub.id === id
@@ -93,6 +143,19 @@ export function useSubmissions() {
             : sub
         )
       );
+      // Also update individual case status if it exists in cases state
+      setCases((prev) =>
+        prev.map((c) =>
+          c.id === id
+            ? {
+                ...c,
+                status: "REJECTED",
+                teacherComments: comments,
+                rejectionReason: reason,
+              }
+            : c
+        )
+      );
       return true;
     } catch (error) {
       console.error("Failed to reject submission:", error);
@@ -103,7 +166,6 @@ export function useSubmissions() {
   const bulkApprove = async (submissionIds: string[], comments?: string) => {
     try {
       await submissionAPI.bulkApproveSubmissions({ submissionIds, comments });
-      // Update local state
       setSubmissions((prev) =>
         prev.map((sub) =>
           submissionIds.includes(sub.id)
@@ -118,15 +180,30 @@ export function useSubmissions() {
     }
   };
 
+  // Add pagination controls
+  const goToPage = (page: number) => {
+    setPagination(prev => ({ ...prev, page }));
+    fetchSubmissions({ page });
+  };
+
+  const changeLimit = (limit: number) => {
+    setPagination(prev => ({ ...prev, limit, page: 1 }));
+    fetchSubmissions({ limit, page: 1 });
+  };
+
   return {
     submissions,
     cases,
     loading,
     error,
+    pagination,
+    fetchSubmissions,
     refetch: fetchSubmissions,
     approveSubmission,
     rejectSubmission,
     fetchCasesByUserID,
     bulkApprove,
+    goToPage,
+    changeLimit,
   };
 }

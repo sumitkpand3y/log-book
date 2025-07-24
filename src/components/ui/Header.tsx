@@ -47,7 +47,7 @@ export default function Header() {
       icon: <LayoutDashboard size={18} />,
       href: "/",
     },
-    // { label: "Log Tasks", icon: <NotebookPen size={18} />, href: "#" },
+    // { label: "Log Tasks", icon: <NotebookPen size={18} />, href: "/learner/logpage" },
     // { label: "Calendar", icon: <Calendar size={18} />, href: "#" },
   ];
 

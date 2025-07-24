@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useTasks } from "@/hooks/useTasks";
-import { useAPI } from "@/hooks/useAPI";
 import { useCourses } from "@/hooks/useCourses";
 import {
   Save,
@@ -12,8 +11,6 @@ import {
   ChevronRight,
   AlertCircle,
   Loader,
-  X,
-  Calendar,
   User,
   FileText,
   Stethoscope,
@@ -75,7 +72,7 @@ interface FormData {
 }
 
 interface TaskPageProps {
-  params: Promise<{ learner: string; action: string }>;
+  params: Promise<{ idd: string; action: string }>;
 }
 
 // ---------- Utility Components ----------
@@ -186,7 +183,6 @@ const TextAreaField: React.FC<{
 // ---------- Main Component ----------
 export default function TaskPage({ params }: TaskPageProps) {
   // Hooks
-  const { execute } = useAPI();
   const {
     tasks,
     createTask,
@@ -195,13 +191,23 @@ export default function TaskPage({ params }: TaskPageProps) {
     loading: tasksLoading,
     error: tasksError,
   } = useTasks();
-  const { courses, loading: loadingCourses, error, refetch: refetchCourses } = useCourses();
-  const { learner, action } = React.use(params);
+  const {
+    courses,
+    loading: loadingCourses,
+    error,
+    refetch: refetchCourses,
+  } = useCourses();
+  const { idd, action } = React.use(params);
+
   const searchParams = useSearchParams();
   const router = useRouter();
-  
+
   // URL parameters
   const taskId = searchParams.get("id");
+  const courseId = searchParams.get("idd");
+  const course = courses.find((item) => item.id == courseId);
+  const courseName = course ? course.name : "Unknown";
+
   const selectedDate = searchParams.get("date") || undefined;
 
   // State management
@@ -226,7 +232,7 @@ export default function TaskPage({ params }: TaskPageProps) {
     labExaminations: "",
     diagnosis: "",
     management: "",
-    courseId: courses[0]?.id || "",
+    courseId: courseId || "",
   });
 
   // ---------- Data Fetching ----------
@@ -239,7 +245,6 @@ export default function TaskPage({ params }: TaskPageProps) {
         if (courses.length === 0) {
           await refetchCourses();
         }
-
         const courseList = courses.length ? courses : [];
 
         if (action === "edit" && taskId) {
@@ -281,9 +286,11 @@ export default function TaskPage({ params }: TaskPageProps) {
     const newErrors: Record<string, string> = {};
 
     if (!formData.date) newErrors.date = "Date is required";
-    if (!formData.age || formData.age <= 0) newErrors.age = "Valid age required";
+    if (!formData.age || formData.age <= 0)
+      newErrors.age = "Valid age required";
     if (!formData.uhid?.trim()) newErrors.uhid = "UHID is required";
-    if (!formData.chiefComplaint?.trim()) newErrors.chiefComplaint = "Chief Complaint required";
+    if (!formData.chiefComplaint?.trim())
+      newErrors.chiefComplaint = "Chief Complaint required";
     if (!formData.courseId) newErrors.courseId = "Course is required";
 
     setErrors(newErrors);
@@ -292,7 +299,7 @@ export default function TaskPage({ params }: TaskPageProps) {
 
   // ---------- Form Handlers ----------
   const updateFormData = (updates: Partial<FormData>) => {
-    setFormData(prev => prev ? { ...prev, ...updates } : null);
+    setFormData((prev) => (prev ? { ...prev, ...updates } : null));
   };
 
   const handleSave = async (isDraft: boolean) => {
@@ -327,14 +334,17 @@ export default function TaskPage({ params }: TaskPageProps) {
 
   const navigateDate = (direction: "prev" | "next") => {
     if (!formData) return;
-    
     const current = new Date(formData.date);
     current.setDate(current.getDate() + (direction === "next" ? 1 : -1));
     updateFormData({ date: current.toISOString().split("T")[0] });
   };
 
   const handleCancel = () => {
-    if (window.confirm("Are you sure you want to cancel? Any unsaved changes will be lost.")) {
+    if (
+      window.confirm(
+        "Are you sure you want to cancel? Any unsaved changes will be lost."
+      )
+    ) {
       router.back();
     }
   };
@@ -369,11 +379,14 @@ export default function TaskPage({ params }: TaskPageProps) {
               </button>
               <div>
                 <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
-                  {action === "edit" ? "Edit Case Log" : "New Case Log"}
+                  {action === "edit" ? "Edit Case Log" : "New Case Log"} {" - "}
+                  {courseName}
                 </h1>
-                {/* <p className="text-sm text-gray-600 mt-1">
-                  {action === "edit" ? "Update existing case details" : "Create a new medical case log"}
-                </p> */}
+                <p className="text-sm text-gray-600 mt-1">
+                  {action === "edit"
+                    ? "Update existing case details"
+                    : "Create a new medical case log"}
+                </p>
               </div>
             </div>
           </div>
@@ -391,23 +404,6 @@ export default function TaskPage({ params }: TaskPageProps) {
                 bgColor="bg-blue-50"
               >
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-                  <InputField label="Course" required error={errors.courseId}>
-                    <select
-                      value={formData.courseId}
-                      onChange={(e) => updateFormData({ courseId: e.target.value })}
-                      className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                        errors.courseId ? "border-red-500" : "border-gray-300"
-                      }`}
-                      disabled={submitting}
-                    >
-                      <option value="">Select Course</option>
-                      {courses.map((course) => (
-                        <option key={course.id} value={course.id}>
-                          {course.title} - {course.enrollmentNumber}
-                        </option>
-                      ))}
-                    </select>
-                  </InputField>
 
                   <InputField label="Date" required error={errors.date}>
                     <div className="flex items-center space-x-2">
@@ -422,7 +418,9 @@ export default function TaskPage({ params }: TaskPageProps) {
                       <input
                         type="date"
                         value={formData.date}
-                        onChange={(e) => updateFormData({ date: e.target.value })}
+                        onChange={(e) =>
+                          updateFormData({ date: e.target.value })
+                        }
                         className={`flex-1 p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
                           errors.date ? "border-red-500" : "border-gray-300"
                         }`}
@@ -465,7 +463,9 @@ export default function TaskPage({ params }: TaskPageProps) {
                     <input
                       type="number"
                       value={formData.age}
-                      onChange={(e) => updateFormData({ age: parseFloat(e.target.value) || 0 })}
+                      onChange={(e) =>
+                        updateFormData({ age: parseFloat(e.target.value) || 0 })
+                      }
                       className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
                         errors.age ? "border-red-500" : "border-gray-300"
                       }`}
@@ -485,11 +485,15 @@ export default function TaskPage({ params }: TaskPageProps) {
                             name="sex"
                             value={option}
                             checked={formData.sex === option}
-                            onChange={(e) => updateFormData({ sex: e.target.value as any })}
+                            onChange={(e) =>
+                              updateFormData({ sex: e.target.value as any })
+                            }
                             className="mr-2 text-blue-600"
                             disabled={submitting}
                           />
-                          <span className="text-sm text-gray-700">{option}</span>
+                          <span className="text-sm text-gray-700">
+                            {option}
+                          </span>
                         </label>
                       ))}
                     </div>
@@ -507,7 +511,9 @@ export default function TaskPage({ params }: TaskPageProps) {
                   <TextAreaField
                     label="Chief Complaint"
                     value={formData.chiefComplaint}
-                    onChange={(value) => updateFormData({ chiefComplaint: value })}
+                    onChange={(value) =>
+                      updateFormData({ chiefComplaint: value })
+                    }
                     placeholder="Enter chief complaint"
                     rows={3}
                     required
@@ -519,7 +525,9 @@ export default function TaskPage({ params }: TaskPageProps) {
                     <TextAreaField
                       label="History of Presenting Illness"
                       value={formData.historyPresenting}
-                      onChange={(value) => updateFormData({ historyPresenting: value })}
+                      onChange={(value) =>
+                        updateFormData({ historyPresenting: value })
+                      }
                       placeholder="Enter detailed history of presenting illness"
                       disabled={submitting}
                     />
@@ -527,7 +535,9 @@ export default function TaskPage({ params }: TaskPageProps) {
                     <TextAreaField
                       label="Past Medical and Surgical History"
                       value={formData.pastHistory}
-                      onChange={(value) => updateFormData({ pastHistory: value })}
+                      onChange={(value) =>
+                        updateFormData({ pastHistory: value })
+                      }
                       placeholder="Enter past medical and surgical history"
                       disabled={submitting}
                     />
@@ -535,7 +545,9 @@ export default function TaskPage({ params }: TaskPageProps) {
                     <TextAreaField
                       label="Personal History"
                       value={formData.personalHistory}
-                      onChange={(value) => updateFormData({ personalHistory: value })}
+                      onChange={(value) =>
+                        updateFormData({ personalHistory: value })
+                      }
                       placeholder="Enter personal history (smoking, alcohol, etc.)"
                       disabled={submitting}
                     />
@@ -543,7 +555,9 @@ export default function TaskPage({ params }: TaskPageProps) {
                     <TextAreaField
                       label="Family History"
                       value={formData.familyHistory}
-                      onChange={(value) => updateFormData({ familyHistory: value })}
+                      onChange={(value) =>
+                        updateFormData({ familyHistory: value })
+                      }
                       placeholder="Enter family history"
                       disabled={submitting}
                     />
@@ -551,7 +565,9 @@ export default function TaskPage({ params }: TaskPageProps) {
                     <TextAreaField
                       label="Clinical Examination"
                       value={formData.clinicalExamination}
-                      onChange={(value) => updateFormData({ clinicalExamination: value })}
+                      onChange={(value) =>
+                        updateFormData({ clinicalExamination: value })
+                      }
                       placeholder="Enter clinical examination findings"
                       disabled={submitting}
                     />
@@ -559,7 +575,9 @@ export default function TaskPage({ params }: TaskPageProps) {
                     <TextAreaField
                       label="Laboratory Examinations"
                       value={formData.labExaminations}
-                      onChange={(value) => updateFormData({ labExaminations: value })}
+                      onChange={(value) =>
+                        updateFormData({ labExaminations: value })
+                      }
                       placeholder="Enter laboratory examination results"
                       disabled={submitting}
                     />
@@ -575,7 +593,9 @@ export default function TaskPage({ params }: TaskPageProps) {
                     <TextAreaField
                       label="Management"
                       value={formData.management}
-                      onChange={(value) => updateFormData({ management: value })}
+                      onChange={(value) =>
+                        updateFormData({ management: value })
+                      }
                       placeholder="Enter management plan"
                       disabled={submitting}
                     />
@@ -592,7 +612,9 @@ export default function TaskPage({ params }: TaskPageProps) {
                       <h4 className="text-sm font-semibold text-red-800 mb-2">
                         Rejection Reason:
                       </h4>
-                      <p className="text-sm text-red-700">{task.rejectionReason}</p>
+                      <p className="text-sm text-red-700">
+                        {task.rejectionReason}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -610,7 +632,7 @@ export default function TaskPage({ params }: TaskPageProps) {
               >
                 Cancel
               </button>
-              
+
               <div className="flex flex-col sm:flex-row w-full sm:w-auto space-y-2 sm:space-y-0 sm:space-x-3">
                 <button
                   onClick={() => handleSave(true)}
@@ -624,7 +646,7 @@ export default function TaskPage({ params }: TaskPageProps) {
                   )}
                   {submitting ? "Saving..." : "Save as Draft"}
                 </button>
-                
+
                 <button
                   onClick={() => handleSave(false)}
                   disabled={submitting}

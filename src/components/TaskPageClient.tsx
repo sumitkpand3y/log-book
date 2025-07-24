@@ -66,7 +66,7 @@ export default function TaskPage({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
 
-  const action = params.action;
+  // const action = params.action;
 
   // ---------- Fetch Courses + Task ----------
   useEffect(() => {

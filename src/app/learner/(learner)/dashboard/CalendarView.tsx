@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState, useMemo, useCallback } from "react";
 import {
-  Calendar,
+  Calendar as CalendarIcon,
   ChevronLeft,
   ChevronRight,
   Plus,
@@ -10,7 +10,6 @@ import {
   X,
 } from "lucide-react";
 
-// Types
 interface Task {
   id: string;
   caseNo: string;
@@ -36,9 +35,9 @@ interface Task {
 interface CalendarViewProps {
   tasksList: Task[];
   onDateClick: (date: string) => void;
-  tasks?: Task[];
   loading?: boolean;
   error?: string;
+  courseId?:string;
   refetch?: () => void;
 }
 
@@ -107,7 +106,7 @@ const CalendarGrid = ({
   const getTasksForDate = useCallback(
     (date: Date) => {
       const targetDate = formatDate(date);
-      return tasks.filter((task) => {
+      return tasks?.filter((task) => {
         const taskDate = task.date.split("T")[0];
         return taskDate === targetDate;
       });
@@ -116,7 +115,7 @@ const CalendarGrid = ({
   );
 
   return (
-    <div className="grid grid-cols-7 gap-1 sm:gap-2">
+    <div className="grid grid-cols-7 gap-1 sm:gap-2 shadow-sm p-1">
       {WEEK_DAYS.map((day) => (
         <div
           key={day}
@@ -153,13 +152,13 @@ const CalendarGrid = ({
               </span>
 
               <div className="flex-1 mt-1 space-y-1">
-                {dayTasks.length === 0 ? (
+                {dayTasks?.length === 0 ? (
                   <div className="flex items-center justify-center h-full opacity-0 hover:opacity-100 transition-opacity">
                     <Plus className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400" />
                   </div>
                 ) : (
                   <>
-                    {dayTasks.slice(0, 2).map((task) => (
+                    {dayTasks?.slice(0, 2).map((task) => (
                       <div
                         key={task.id}
                         className={`w-full h-1 sm:h-2 rounded-full ${getStatusColor(
@@ -168,7 +167,7 @@ const CalendarGrid = ({
                         title={`${task.caseNo} - ${task.status}`}
                       />
                     ))}
-                    {dayTasks.length > 2 && (
+                    {dayTasks?.length > 2 && (
                       <div className="text-xs text-gray-500 text-center">
                         +{dayTasks.length - 2}
                       </div>
@@ -256,7 +255,7 @@ const DayModal = ({
             ))
           ) : (
             <div className="text-center text-gray-400 text-sm py-8">
-              <Calendar className="w-12 h-12 mx-auto mb-2 text-gray-300" />
+              <CalendarIcon className="w-12 h-12 mx-auto mb-2 text-gray-300" />
               <p>No tasks for this day</p>
             </div>
           )}
@@ -277,7 +276,7 @@ const DayModal = ({
 };
 
 const StatusLegend = () => (
-  <div className="mt-6 pt-4 border-t border-gray-200">
+  <div className="mt-6 pt-4 ">
     <p className="text-sm font-medium text-gray-900 mb-2">Status Legend:</p>
     <div className="flex flex-wrap gap-2 sm:gap-4">
       {[
@@ -300,7 +299,7 @@ const StatusLegend = () => (
 export default function CalendarView({
   tasksList,
   onDateClick,
-  tasks = [],
+  courseId,
   loading = false,
   error = null,
   refetch,
@@ -308,11 +307,6 @@ export default function CalendarView({
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState<Date | null>(null);
   const [tasksForDay, setTasksForDay] = useState<Task[]>([]);
-
-  const allTasks = useMemo(() => {
-    return [...tasksList, ...tasks];
-  }, [tasksList, tasks]);
-
   const handleDayClick = useCallback((day: Date, dayTasks: Task[]) => {
     setSelectedDay(day);
     setTasksForDay(dayTasks);
@@ -322,6 +316,14 @@ export default function CalendarView({
     (date: Date) => {
       const isoDate = date.toISOString();
       onDateClick(isoDate);
+      setSelectedDay(null);
+    },
+    [onDateClick]
+  );
+
+  const handleTaskClick = useCallback(
+    (taskId: string) => {
+      onDateClick(taskId);
       setSelectedDay(null);
     },
     [onDateClick]
@@ -352,13 +354,11 @@ export default function CalendarView({
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-        <div className="text-center bg-white p-6 sm:p-8 rounded-2xl shadow-lg max-w-sm w-full">
-          <div className="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <Stethoscope className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600 mx-auto mb-2" />
-          <p className="text-gray-600 font-medium text-sm sm:text-base">
-            Loading Medical Dashboard...
-          </p>
+      <div className="min-h-[400px] flex items-center justify-center p-4">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <Stethoscope className="w-6 h-6 text-blue-600 mx-auto mb-2" />
+          <p className="text-gray-600 font-medium">Loading Calendar...</p>
         </div>
       </div>
     );
@@ -366,7 +366,7 @@ export default function CalendarView({
 
   if (error) {
     return (
-      <div className="bg-white rounded-xl shadow-md p-6 flex items-center justify-center min-h-[400px]">
+      <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
           <XCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
           <p className="text-red-600">Error loading calendar: {error}</p>
@@ -376,14 +376,13 @@ export default function CalendarView({
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-md p-4 sm:p-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
+    <div>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 gap-4 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-200">
         <div className="flex items-center space-x-4">
-          <h3 className="text-lg font-semibold text-gray-900">Calendar View</h3>
           <div className="flex items-center space-x-2">
             <button
               onClick={() => navigateMonth("prev")}
-              className="p-2 hover:bg-gray-100 rounded-lg transition"
+              className="p-2 border border-gray-300 hover:bg-blue-200 rounded-lg transition cursor-pointer"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
@@ -392,7 +391,7 @@ export default function CalendarView({
             </span>
             <button
               onClick={() => navigateMonth("next")}
-              className="p-2 hover:bg-gray-100 rounded-lg transition"
+              className="p-2 border border-gray-300 hover:bg-blue-200 rounded-lg transition cursor-pointer"
             >
               <ChevronRight className="w-4 h-4" />
             </button>
@@ -402,7 +401,7 @@ export default function CalendarView({
 
       <CalendarGrid
         currentDate={currentDate}
-        tasks={allTasks}
+        tasks={tasksList}
         onDayClick={handleDayClick}
       />
 
@@ -410,7 +409,7 @@ export default function CalendarView({
         selectedDay={selectedDay}
         tasksForDay={tasksForDay}
         onClose={() => setSelectedDay(null)}
-        onTaskClick={onDateClick}
+        onTaskClick={handleTaskClick}
         onAddTask={handleAddTask}
       />
 

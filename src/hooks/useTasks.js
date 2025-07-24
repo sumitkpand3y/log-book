@@ -26,6 +26,8 @@ export function useTasks(filters = {}) {
       };
 
       const data = await execute(() => taskAPI.getAllTasks(paginationParams));
+      console.log("data", data);
+      
       if (data)
         setTasks(data.data.tasks || []),
           setPagination((prev) => ({
@@ -148,46 +150,3 @@ export function useTasks(filters = {}) {
     refetch: refreshTasks, // So you can call this manually if needed
   };
 }
-// refetch: loadTasks,
-
-// export function useTask(id) {
-
-//   const [task, setTask] = useState(null);
-//   const { execute, loading, error } = useAPI();
-
-//   const loadTask = useCallback(async () => {
-//     if (id) {
-//       const data = await execute(() => taskAPI.getTaskById(id));
-//       if (data) setTask(data);
-//     }
-//   }, [execute, id]);
-
-//   useEffect(() => {
-//     loadTask();
-//   }, [loadTask]);
-
-//   const approveTask = async (feedback) => {
-//     const result = await execute(() => taskAPI.approveTask(id, feedback));
-//     if (result) {
-//       setTask((prev) => ({ ...prev, status: "APPROVED" }));
-//     }
-//     return result;
-//   };
-
-//   const rejectTask = async (feedback) => {
-//     const result = await execute(() => taskAPI.rejectTask(id, feedback));
-//     if (result) {
-//       setTask((prev) => ({ ...prev, status: "REJECTED" }));
-//     }
-//     return result;
-//   };
-
-//   return {
-//     task,
-//     loading,
-//     error,
-//     approveTask,
-//     rejectTask,
-//     refetch: loadTask,
-//   };
-// }

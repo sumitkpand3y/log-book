@@ -61,38 +61,11 @@ export default function LoginPage() {
         <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-8">
           <div className="space-y-6">
             {/* Role Selection */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Login as
+            <div className="text-center">
+              <label className="block text-lg font-medium text-gray-700 mb-2">
+                Login
               </label>
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={() =>
-                    setFormData((prev) => ({ ...prev, role: "learner" }))
-                  }
-                  className={`p-3 rounded-lg border-2 transition-all ${
-                    formData.role === "learner"
-                      ? "border-blue-500 bg-blue-50 text-blue-700"
-                      : "border-gray-200 hover:border-gray-300"
-                  }`}
-                >
-                  <div className="text-sm font-medium">Learner</div>
-                </button>
-                <button
-                  type="button"
-                  onClick={() =>
-                    setFormData((prev) => ({ ...prev, role: "instructor" }))
-                  }
-                  className={`p-3 rounded-lg border-2 transition-all ${
-                    formData.role === "instructor"
-                      ? "border-blue-500 bg-blue-50 text-blue-700"
-                      : "border-gray-200 hover:border-gray-300"
-                  }`}
-                >
-                  <div className="text-sm font-medium">Instructor</div>
-                </button>
-              </div>
+             
             </div>
 
             {/* Email Field */}

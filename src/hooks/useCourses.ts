@@ -12,7 +12,9 @@ export function useCourses() {
     setError(null);
     try {
       const data = await courseAPI.getEnrolledCourses(); // or getAllCourses()
-      setCourses(data.data.courses || []);
+
+      let filtercourses = data.data.courses.filter((item)=> item.trainingLocationStatus == 'Active')
+      setCourses(filtercourses || []);
     } catch (err) {
       console.error(err);
       setError("Failed to load courses");

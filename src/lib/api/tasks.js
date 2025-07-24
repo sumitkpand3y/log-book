@@ -3,13 +3,13 @@ import { apiCache } from '@/lib/api/cache'
 
 export const taskAPI = {
   // Get all tasks with optional filtering
-  async getAllTasks(filters = {}) {
-    return apiFetch.get('/tasks', {
-      params: filters,
-      cache: true,
-      cacheTTL: 2 * 60 * 1000, // 2 minutes for task lists
-    });
-  },
+  // async getAllTasks(filters = {}) {
+  //   return apiFetch.get('/tasks', {
+  //     params: filters,
+  //     cache: true,
+  //     cacheTTL: 2 * 60 * 1000, // 2 minutes for task lists
+  //   });
+  // },
 
   // Get tasks for teacher review
   async getTasksForReview() {

@@ -27,11 +27,23 @@ interface RejectionData {
   rejectionReason?: string;
 }
 
+interface SubmissionFilters {
+  search?: string;
+  status?: string;
+  department?: string;
+  priority?: string;
+  startDate?: string;
+  endDate?: string;
+  page?: number;
+  limit?: number;
+}
+
 export const submissionAPI = {
-  // Get all submissions for teacher
-  async getAllSubmissions() {
+  // Get all submissions for teacher with filters
+  async getAllSubmissions(filters?: SubmissionFilters) {
     try {
       return await apiFetch.get("/submissions", {
+        params: filters,
         cache: true,
         cacheTTL: 2 * 60 * 1000, // 2 minutes cache
       });
@@ -41,10 +53,11 @@ export const submissionAPI = {
     }
   },
 
-  // Get dashboard statistics
-  async getDashboardStats() {
+  // Get dashboard statistics with optional filters
+  async getDashboardStats(filters?: Pick<SubmissionFilters, 'startDate' | 'endDate'>) {
     try {
       return await apiFetch.get("/submissions/stats", {
+        params: filters,
         cache: true,
         cacheTTL: 5 * 60 * 1000, // 5 minutes cache
       });
@@ -54,10 +67,11 @@ export const submissionAPI = {
     }
   },
 
-  // Export submissions data
-  async exportSubmissions() {
+  // Export submissions data with filters
+  async exportSubmissions(filters?: Omit<SubmissionFilters, 'page' | 'limit'>) {
     try {
       return await apiFetch.get("/submissions/export", {
+        params: filters,
         responseType: 'blob', // For file downloads
       });
     } catch (error) {
@@ -78,10 +92,12 @@ export const submissionAPI = {
       return null;
     }
   },
-  // Get single submission by ID
-  async getAllCasesByUserId(userId: string) {
+
+  // Get all cases by user ID with optional filters
+  async getAllCasesByUserId(userId: string, filters?: Omit<SubmissionFilters, 'search' | 'page' | 'limit'>) {
     try {
       return await apiFetch.get(`/submissions/user/${userId}`, {
+        params: filters,
         cache: true,
         cacheTTL: 3 * 60 * 1000, // 3 minutes cache
       });
